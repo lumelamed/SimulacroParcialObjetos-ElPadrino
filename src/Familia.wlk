@@ -1,3 +1,5 @@
+import Armas.*
+
 class Familia {
 	var property don
 	var property miembrosDeFamilia = #{}
@@ -5,9 +7,14 @@ class Familia {
 	method mafiosoMasArmado(){
 		return miembrosDeFamilia.filter({persona => persona.estaVivo()}).max({persona => persona.armas().size()})
 	}
+	
+	method distribuirArmas(){
+		miembrosDeFamilia.foreach({persona => persona.agregarArma(new Revolver(cantidadDeBalasDisponibles = 6))})
+	}
 }
 
 class MiembroDeFamilia {
+	var property armas = []
 	var property estaVivo = true
 	var property estaHerido = false
 	
@@ -19,11 +26,19 @@ class MiembroDeFamilia {
 		estaHerido = false
 		estaVivo = false
 	}
+	
+	method agregarArma(nuevaArma){
+		armas.add(nuevaArma)
+	}
 }
 
 class Don inherits MiembroDeFamilia {
-	var property armas = []
 	var property subordinados = #{}
+	
+	method elegirArma(){
+		const unSubordinado = subordinados.anyOne()
+		return unSubordinado.elegirArma()
+	}
 	
 	method atacarA(unaPersona){
 		const unSubordinado = subordinados.anyOne()
@@ -33,7 +48,6 @@ class Don inherits MiembroDeFamilia {
 }
 
 class Subjefe inherits MiembroDeFamilia {
-	var property armas = []
 	var property subordinados = #{}
 	var property ultimaArmaUsada
 	
@@ -47,8 +61,6 @@ class Subjefe inherits MiembroDeFamilia {
 }
 
 class Soldado inherits MiembroDeFamilia {
-	var property armas = []
-	
 	method elegirArma(){
 		return armas.anyOne()
 	}
