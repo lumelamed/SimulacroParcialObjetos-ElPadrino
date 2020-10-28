@@ -1,5 +1,6 @@
 class Revolver {
 	var property cantidadDeBalasDisponibles
+	var property esSutil
 	
 	method atacarA(unaPersona){
 		if(self.puedeDisparar()){
@@ -19,9 +20,15 @@ class Revolver {
 	method quedanBalasDisponibles(){
 		return cantidadDeBalasDisponibles > 0
 	}
+	
+	method esSutil(){
+		return cantidadDeBalasDisponibles == 1
+	}
 }
 
 class Escopeta {
+	var property esSutil = false
+	
 	method atacarA(unaPersona){
 		if(unaPersona.estaHerida()){
 			unaPersona.morirse()
@@ -32,7 +39,8 @@ class Escopeta {
 }
 
 class CuerdaDePiano {
-	const property esDeBuenaCalidad
+	const esDeBuenaCalidad
+	var property esSutil = true 
 	
 	method atacarA(unaPersona){
 		if(esDeBuenaCalidad){

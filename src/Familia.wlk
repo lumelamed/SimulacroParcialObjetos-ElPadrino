@@ -11,6 +11,13 @@ class Familia {
 	method distribuirArmas(){
 		miembrosDeFamilia.foreach({persona => persona.agregarArma(new Revolver(cantidadDeBalasDisponibles = 6))})
 	}
+	
+	method atacar(otraFamilia){
+		const laFamiliaTienePersonasVivas = otraFamilia.miembrosDeFamilia().all({persona => persona.estaVivo()})
+		if(laFamiliaTienePersonasVivas){
+			miembrosDeFamilia.forEach({persona => persona.atacarA(otraFamilia.mafiosoMasArmado())})
+		}
+	}
 }
 
 class MiembroDeFamilia {
@@ -45,6 +52,10 @@ class Don inherits MiembroDeFamilia {
 		unSubordinado.atacarA(unaPersona)
 		unSubordinado.atacarA(unaPersona)
 	}
+	
+	method sabeDespacharElegantemente(){
+		return true
+	}
 }
 
 class Subjefe inherits MiembroDeFamilia {
@@ -58,6 +69,10 @@ class Subjefe inherits MiembroDeFamilia {
 	method atacarA(unaPersona){
 		self.elegirArma().atacarA(unaPersona)
 	}
+	
+	method sabeDespacharElegantemente(){
+		subordinados.anyOne().sabeDespacharElegantemente()
+	}
 }
 
 class Soldado inherits MiembroDeFamilia {
@@ -67,5 +82,9 @@ class Soldado inherits MiembroDeFamilia {
 	
 	method atacarA(unaPersona){
 		self.elegirArma().atacarA(unaPersona)
+	}
+	
+	method sabeDespacharElegantemente(){
+		return armas.anyOne({arma => arma.esSutil()})
 	}
 }
