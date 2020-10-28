@@ -1,7 +1,9 @@
 import Armas.*
+import Rangos.*
 
 class Familia {
-	var property don
+	const apellido
+	var property donDeFamilia
 	var property miembrosDeFamilia = #{}
 	
 	method mafiosoMasArmado(){
@@ -9,7 +11,7 @@ class Familia {
 	}
 	
 	method distribuirArmas(){
-		miembrosDeFamilia.foreach({persona => persona.agregarArma(new Revolver(cantidadDeBalasDisponibles = 6))})
+		miembrosDeFamilia.foreach({persona => persona.agregarArma(new Revolver(cantidadDeBalasDisponibles = 6, esSutil = false))})
 	}
 	
 	method atacar(otraFamilia){
@@ -18,12 +20,49 @@ class Familia {
 			miembrosDeFamilia.forEach({persona => persona.atacarA(otraFamilia.mafiosoMasArmado())})
 		}
 	}
+	
+	method elMasLealDe(miembros){
+		return miembros.filter({persona => persona.estaVivo()}).max({persona => persona.lealtad()})
+	}
+	
+	method reorganizarse(){
+		const subjefes = miembrosDeFamilia.map({persona => persona.rango() == subjefe})
+		miembrosDeFamilia.forEach({persona =>
+			persona.aumentarLealtadEn(10)
+			
+			if(persona.rango() == subjefe){
+				if(persona == self.elMasLealDe(subjefes) && persona.puedeConvertirseEnDon()){
+					persona.cambiarRango(don)
+					donDeFamilia = persona
+				}
+			}
+			else if(persona.rango() == soldado){
+				if(persona.puedeConvertirseEnSubjefe()){
+					persona.cambiarRango(subjefe)
+				}
+			}
+		})
+	}
 }
 
 class MiembroDeFamilia {
+	const nombre
+	const property familia
+	var rango
 	var property armas = []
 	var property estaVivo = true
 	var property estaHerido = false
+	var property lealtad
+	
+	method rango(){
+		return rango
+	}
+	
+	method cambiarRango(otroRango){
+		const subordinadosAntes = rango.subordinados()
+		rango = otroRango
+		rango.heredarSubordinados(subordinadosAntes)
+	}
 	
 	method herirse(){
 		estaHerido = true
@@ -32,59 +71,36 @@ class MiembroDeFamilia {
 	method morirse(){
 		estaHerido = false
 		estaVivo = false
+		if(rango == don){
+			familia.reorganizarse()
+		}
 	}
 	
 	method agregarArma(nuevaArma){
 		armas.add(nuevaArma)
 	}
-}
-
-class Don inherits MiembroDeFamilia {
-	var property subordinados = #{}
 	
-	method elegirArma(){
-		const unSubordinado = subordinados.anyOne()
-		return unSubordinado.elegirArma()
-	}
-	
-	method atacarA(unaPersona){
-		const unSubordinado = subordinados.anyOne()
-		unSubordinado.atacarA(unaPersona)
-		unSubordinado.atacarA(unaPersona)
+	method aumentarLealtadEn(porcentaje){
+		lealtad += (lealtad * porcentaje / 100)
 	}
 	
 	method sabeDespacharElegantemente(){
-		return true
-	}
-}
-
-class Subjefe inherits MiembroDeFamilia {
-	var property subordinados = #{}
-	var property ultimaArmaUsada
-	
-	method elegirArma(){
-		return armas.anyOne({arma => arma != ultimaArmaUsada})
+		return rango.sabeDespacharElegantemente(armas)
 	}
 	
 	method atacarA(unaPersona){
-		self.elegirArma().atacarA(unaPersona)
+		rango.atacarA(unaPersona, armas)
 	}
 	
-	method sabeDespacharElegantemente(){
-		subordinados.anyOne().sabeDespacharElegantemente()
-	}
-}
-
-class Soldado inherits MiembroDeFamilia {
 	method elegirArma(){
-		return armas.anyOne()
+		rango.elegirArma(armas)
 	}
 	
-	method atacarA(unaPersona){
-		self.elegirArma().atacarA(unaPersona)
+	method puedeConvertirseEnDon(){
+		return rango == subjefe && self.sabeDespacharElegantemente()
 	}
 	
-	method sabeDespacharElegantemente(){
-		return armas.anyOne({arma => arma.esSutil()})
+	method puedeConvertirseEnSubjefe(){
+		return rango == soldado && armas.size() > 5
 	}
 }
