@@ -1,6 +1,10 @@
 class Familia {
 	var property don
+	var property miembrosDeFamilia = #{}
 	
+	method mafiosoMasArmado(){
+		return miembrosDeFamilia.filter({persona => persona.estaVivo()}).max({persona => persona.armas().size()})
+	}
 }
 
 class MiembroDeFamilia {
