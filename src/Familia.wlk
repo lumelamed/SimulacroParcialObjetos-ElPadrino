@@ -1,10 +1,12 @@
 import Armas.*
 import Rangos.*
+import Traicion.*
 
 class Familia {
 	const apellido
 	var property donDeFamilia
 	var property miembrosDeFamilia = #{}
+	var property traiciones = #{}
 	
 	method mafiosoMasArmado(){
 		return miembrosDeFamilia.filter({persona => persona.estaVivo()}).max({persona => persona.armas().size()})
@@ -23,6 +25,41 @@ class Familia {
 	
 	method elMasLealDe(miembros){
 		return miembros.filter({persona => persona.estaVivo()}).max({persona => persona.lealtad()})
+	}
+	
+	method iniciarTraicion(unaFechaTentativa, primeraVictima){
+		traiciones.add(new Traicion(fechaTentativa = unaFechaTentativa, victimas = #{primeraVictima}))
+	}
+	
+	method seComplicaUnaTraicion(unaTraicion, unaFechaTentativa, nuevaVictima){
+		unaTraicion.seComplica(unaFechaTentativa, nuevaVictima)
+	}
+	
+	method concretarTraicion(traidor, traicion, nuevaFamilia){
+		if(self.validarSiSePuedeContretarTraicion(traidor)){
+			traicion.concretarTraicion(traidor)
+			self.quitarMiembro(traidor)
+			traidor.aumentarLealtadEn(100)
+			nuevaFamilia.agregarMiembro(traidor)
+		} else {
+			traidor.morirse()
+		}
+	}
+	
+	method validarSiSePuedeContretarTraicion(traidor){
+		return self.lealtadPromedio() * 2 <= traidor.lealtad()
+	}
+	
+	method quitarMiembro(miembroAQuitar){
+		miembrosDeFamilia.remove(miembroAQuitar)
+	}
+	
+	method agregarMiembro(miemroAAgregar){
+		miembrosDeFamilia.add(miemroAAgregar)
+	}
+	
+	method lealtadPromedio(){
+		return miembrosDeFamilia.map({persona => persona.lealtad()}) / miembrosDeFamilia.size()
 	}
 	
 	method reorganizarse(){
